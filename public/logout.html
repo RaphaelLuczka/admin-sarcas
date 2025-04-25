@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="logo_rocha.png">
+  <title>Saindo...</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #15202b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    .logout-box {
+      text-align: center;
+    }
+
+    .logout-box img {
+      width: 60px;
+      margin-bottom: 20px;
+    }
+
+    .logout-box p {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logout-box">
+    <img src="logo_rocha.png" alt="Logo Rocha Church">
+    <p>Você saiu com sucesso.<br>Redirecionando para o login...</p>
+  </div>
+
+  <script>
+    localStorage.removeItem('logado');
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 2000);
+  </script>
+</body>
+</html>

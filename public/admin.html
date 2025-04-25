@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="icon" href="logo_rocha.png">
+<head><title>Painel Admin</title></head>
+<body>
+  <button class="logout-btn" onclick="logout()">Sair</button>
+  <div class="logo-container">
+    <img src="logo_rocha.png" alt="Logo Rocha Church" />
+  </div>
+
+  <h2>Adicionar Novo Evento</h2>
+
+  <form class="form-container" action="/upload" method="POST" enctype="multipart/form-data">
+
+    <div class="input-group">
+      <i class="fas fa-heading"></i>
+      <input type="text" name="titulo" placeholder="Título do evento" required>
+    </div>
+  
+    <div class="input-group">
+      <i class="fas fa-calendar-alt"></i>
+      <input type="date" name="data" required>
+    </div>
+  
+    <div class="input-group">
+      <i class="fas fa-align-left"></i>
+      <textarea name="descricao" placeholder="Descrição do evento" rows="3" required></textarea>
+    </div>
+  
+    <div class="input-group">
+      <i class="fas fa-image"></i>
+      <input type="file" name="banner" required>
+    </div>
+  
+    <button type="submit">
+      <i class="fas fa-save"></i> Salvar Evento
+    </button>
+  </form>
+
+  <div class="banners-container">
+    <!-- Aqui aparecem os banners via JS -->
+  </div>
+</body>
+
+  <script>
+    fetch('/banners.json')
+      .then(res => res.json())
+      .then(data => {
+        const ul = document.getElementById('lista-banners');
+        data.forEach(b => {
+          const li = document.createElement('li');
+          li.innerHTML = `<img src="${b.url}" width="100"><form action="/delete" method="POST" style="display:inline;"><input type="hidden" name="url" value="${b.url}"><button type="submit">Excluir</button></form>`;
+          ul.appendChild(li);
+        });
+      });
+  </script>
+
+  <script>
+  function logout() {
+    fetch('/logout', { method: 'POST' })
+      .then(() => window.location.href = 'logout.html');
+  }
+  </script>
+
+</body>
+</html>
