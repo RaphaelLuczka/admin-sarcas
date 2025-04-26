@@ -65,7 +65,11 @@ app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
     cloudinary.uploader.upload_stream(
       { folder: 'banners_rocha', resource_type: 'image' },
       (error, result) => {
-        if (error) return res.status(500).send('Erro ao enviar imagem.');
+        if (error) {
+          console.error('Erro do Cloudinary:', error);
+          return res.status(500).send('Erro ao enviar imagem.');
+        }
+    
 
         let banners = [];
         try {
