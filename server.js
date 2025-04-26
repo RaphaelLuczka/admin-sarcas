@@ -13,8 +13,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const cors = require('cors');
+app.use(cors());
+
+const express = require('express');
+const cors = require('cors');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const session = require('express-session');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors()); // <-- Coloca aqui, bem no início
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static('public'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
