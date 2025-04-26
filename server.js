@@ -75,7 +75,13 @@ app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
           banners = [];
         }
 
-        banners.push({ url: result.secure_url, nome: file.originalname });
+        banners.push({
+          url: result.secure_url,
+          nome: file.originalname,
+          titulo: req.body.titulo,
+          data: req.body.data,
+          descricao: req.body.descricao
+        });
         fs.writeFileSync('banners.json', JSON.stringify(banners, null, 2));
         res.redirect('/admin.html');
       }
