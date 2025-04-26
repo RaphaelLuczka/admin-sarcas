@@ -57,13 +57,13 @@ app.get('/logout', (req, res) => {
 });
 
 // Upload
-app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
+app.post('/upload-sarcas', checkAuth, upload.single('banner'), async (req, res) => {
   const file = req.file;
   if (!file) return res.status(400).send('Nenhum arquivo enviado.');
 
   try {
     cloudinary.uploader.upload_stream(
-      { folder: 'banners_rocha', resource_type: 'image' },
+      { folder: 'banners_sarcas', resource_type: 'image' },
       (error, result) => {
         if (error) {
           console.error('Erro do Cloudinary:', error);
@@ -73,7 +73,7 @@ app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
 
         let banners = [];
         try {
-          const data = fs.readFileSync('banners.json');
+          const data = fs.readFileSync('banners-sarcas.json');
           banners = data.length ? JSON.parse(data) : [];
         } catch (e) {
           banners = [];
@@ -86,8 +86,8 @@ app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
           data: req.body.data,
           descricao: req.body.descricao
         });
-        fs.writeFileSync('banners.json', JSON.stringify(banners, null, 2));
-        res.redirect('/admin.html');
+        fs.writeFileSync('banners-sarcas.json', JSON.stringify(banners, null, 2));
+        res.redirect('/admin-sarcas.html');
       }
     ).end(file.buffer);
   } catch (err) {
@@ -97,17 +97,17 @@ app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
 });
 
 // Excluir banner
-app.post('/delete', checkAuth, (req, res) => {
+app.post('/delete-sarcas', checkAuth, (req, res) => {
   const { url } = req.body;
-  let banners = JSON.parse(fs.readFileSync('banners.json'));
+  let banners = JSON.parse(fs.readFileSync('banners-sarcas.json'));
   banners = banners.filter(b => b.url !== url);
-  fs.writeFileSync('banners.json', JSON.stringify(banners, null, 2));
-  res.redirect('/admin.html');
+  fs.writeFileSync('banners-sarcas.json', JSON.stringify(banners, null, 2));
+  res.redirect('/admin-sarcas.html');
 });
 
 // API pública
-app.get('/banners.json', (req, res) => {
-  const data = fs.readFileSync('banners.json');
+app.get('/banners-sarcas.json', (req, res) => {
+  const data = fs.readFileSync('/banners-sarcas.json');
   res.setHeader('Content-Type', 'application/json');
   res.send(data);
 });
