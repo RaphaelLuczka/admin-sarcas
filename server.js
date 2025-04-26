@@ -5,56 +5,35 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
+const cors = require('cors');
 const cloudinary = require('cloudinary').v2;
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Config Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const cors = require('cors');
+// Middlewares
 app.use(cors());
-
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-const session = require('express-session');
-const cloudinary = require('cloudinary').v2;
-require('dotenv').config();
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(cors()); // <-- Coloca aqui, bem no início
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static('public'));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static('public'));
-
 app.use(session({
   secret: 'rochaSecret123',
   resave: false,
   saveUninitialized: true,
 }));
 
-// Configuração de armazenamento para multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads'),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
-
+// Config multer (memória)
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Middleware de autenticação
+// Autenticação
 function checkAuth(req, res, next) {
   if (req.session.loggedIn) return next();
   return res.redirect('/login.html');
@@ -77,24 +56,37 @@ app.get('/logout', (req, res) => {
   res.redirect('/login.html');
 });
 
-// Enviar banner
-app.post('/upload', checkAuth, upload.single('banner'), (req, res) => {
+// Upload
+app.post('/upload', checkAuth, upload.single('banner'), async (req, res) => {
   const file = req.file;
   if (!file) return res.status(400).send('Nenhum arquivo enviado.');
 
-  let banners = [];
   try {
-    const data = fs.readFileSync('banners.json');
-    banners = data.length ? JSON.parse(data) : [];
-  } catch (e) {
-    banners = [];
+    cloudinary.uploader.upload_stream(
+      { folder: 'banners_rocha', resource_type: 'image' },
+      (error, result) => {
+        if (error) return res.status(500).send('Erro ao enviar imagem.');
+
+        let banners = [];
+        try {
+          const data = fs.readFileSync('banners.json');
+          banners = data.length ? JSON.parse(data) : [];
+        } catch (e) {
+          banners = [];
+        }
+
+        banners.push({ url: result.secure_url, nome: file.originalname });
+        fs.writeFileSync('banners.json', JSON.stringify(banners, null, 2));
+        res.redirect('/admin.html');
+      }
+    ).end(file.buffer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erro interno.');
   }
-  banners.push({ url: '/uploads/' + file.filename, nome: file.originalname });
-  fs.writeFileSync('banners.json', JSON.stringify(banners, null, 2));
-  res.redirect('/admin.html');
 });
 
-// Deletar banner
+// Excluir banner
 app.post('/delete', checkAuth, (req, res) => {
   const { url } = req.body;
   let banners = JSON.parse(fs.readFileSync('banners.json'));
@@ -110,12 +102,10 @@ app.get('/banners.json', (req, res) => {
   res.send(data);
 });
 
-// Rota principal para exibir o login
+// Página inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-
-// Forçando teste deploy no Railway
+// Iniciar servidor
 app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
-// teste
